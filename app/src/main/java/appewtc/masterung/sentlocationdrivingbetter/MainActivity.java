@@ -7,13 +7,22 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
@@ -48,12 +57,32 @@ public class MainActivity extends AppCompatActivity {
         String strLat = latTextView.getText().toString();
         String strLng = lngTextView.getText().toString();
 
-        //Change Policy
+
+        try {
+
+            //Change Policy
+            StrictMode.ThreadPolicy threadPolicy = new StrictMode.ThreadPolicy
+                    .Builder().permitAll().build();
+            StrictMode.setThreadPolicy(threadPolicy);
+
+            ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+            nameValuePairs.add(new BasicNameValuePair("isAdd", "true"));
+            nameValuePairs.add(new BasicNameValuePair("Date", strCurrentDate));
+            nameValuePairs.add(new BasicNameValuePair("Lat", strLat));
+            nameValuePairs.add(new BasicNameValuePair("Lng", strLng));
 
 
-        Log.d("26Feb", "CurrentDate ==> " + strCurrentDate);
-        Log.d("26Feb", "Lat ==> " + strLat);
-        Log.d("26Feb", "Lng ==> " + strLng);
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpPost httpPost = new HttpPost("http://swiftcodingthai.com/car/php_add_location.php");
+            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
+            httpClient.execute(httpPost);
+
+
+
+        } catch (Exception e) {
+            Log.d("26Feb", "Error ==>>> " + e.toString());
+        }
+
 
         myLoop();
 
@@ -65,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-            updateLocationToMySQL();
+                updateLocationToMySQL();
             }
         }, 5000);
 
